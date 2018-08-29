@@ -1,8 +1,53 @@
-// D3 Scatterplot Assignment
+var states = ["AL",
+"AK",
+"AZ",
+"AR",
+"CA",
+"CO",
+"DE",
+"DC",
+"FL",
+"GA",
+"HI",
+"ID",
+"IL",
+"IN",
+"KS",
+"KY",
+"LA",
+"ME",
+"MD",
+"MA",
+"MI",
+"MN",
+"MS",
+"MO",
+"MT",
+"NE",
+"NV",
+"NH",
+"NJ",
+"NM",
+"NY",
+"NC",
+"ND",
+"OH",
+"OK",
+"OR",
+"PA",
+"RI",
+"SC",
+"SD",
+"TN",
+"TX",
+"UT",
+"VT",
+"VA",
+"WA",
+"WV",
+"WI",
+"WY"]
 
-// Students:
-// =========
-// Follow your written instructions and create a scatter plot with D3.js.
 var svgWidth = 960;
 var svgHeight = 500;
 
@@ -26,31 +71,17 @@ var chartGroup = svg.append("g")
   .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
 // Import Data
-d3.csv("data.csv", function(error, usCensusData) {
-  if (error) throw error;
+d3.csv("data1.csv", function(err, usCensusData) {
+  if (err) throw err;
 
-  usCensusData.forEach(function(data) {   
+  // Step 1: Parse Data/Cast as numbers
+   // ==============================
+  usCensusData.forEach(function(data) {
     data.poverty = +data.poverty;
-    data.povertyMoe = +data.povertyMoe;
-    data.age = +data.age;
-    data.ageMoe = +data.ageMoe;
-    data.income = +data.income;
-    data.incomeMoe = +data.incomeMoe;
-    data.healthcare = +data.healthcare;
-    data.healthcareLow = +data.healthcareLow;
-    data.healthcareHigh = +data.healthcareHigh;
-    data.obesity = +data.obesity;
-    data.obesityLow = +data.obesityLow;
-    data.obesityHigh = +data.obesityHigh;
     data.smokes = +data.smokes;
-    data.smokesLow = +data.smokesLow;
-    data.smokesHigh = +data.smokesHigh;
-
-    // console.log(data)
   });
 
-
-  // Create scale functions
+  // Step 2: Create scale functions
   // ==============================
   var xLinearScale = d3.scaleLinear()
     .domain([0, d3.max(usCensusData, d => d.poverty)])
@@ -60,12 +91,10 @@ d3.csv("data.csv", function(error, usCensusData) {
     .domain([0, d3.max(usCensusData, d => d.smokes)])
     .range([height, 0]);
 
-
-// Step 3: Create axis functions
+  // Step 3: Create axis functions
   // ==============================
   var bottomAxis = d3.axisBottom(xLinearScale);
   var leftAxis = d3.axisLeft(yLinearScale);
-
 
   // Step 4: Append Axes to the chart
   // ==============================
@@ -76,20 +105,87 @@ d3.csv("data.csv", function(error, usCensusData) {
   chartGroup.append("g")
     .call(leftAxis);
 
-    // Step 5: Create Circles
+
+  var circlesGroup  = chartGroup.selectAll("circle")
+           .data(usCensusData)
+           .enter()
+           .append("circle")
+           .attr("cx", d => xLinearScale(d.poverty))
+           .attr("cy", d => yLinearScale(d.smokes))
+           .attr("r", 7)
+           .attr("fill", "pink")
+           .attr("opacity", ".5");
+
+        var labels = chartGroup.selectAll("text")
+           .data(usCensusData)
+           .enter()
+           .append("text")
+           // Add your code below this line
+           .attr("x", (d) => xLinearScale(d.poverty))
+           .attr("y", (d) => yLinearScale(d.smokes))
+           .text((d) => d.abbr);
+
+
+
+// var node = chartGroup.selectAll("g")
+// .data(usCensusData)
+// .enter()
+// .append("g");
+//
+// node.append("circle")
+//     // .attr("class", "dot")
+//     // .attr("dot", function(d) { return xLinearScale(d.poverty); })
+//     // .attr("dot", function(d) { return yLinearScale(d.smokes); })
+//     .attr("cx", d => xLinearScale(d.poverty))
+//     .attr("cy", d => yLinearScale(d.smokes))
+//     .attr("r", "5")
+;
+//
+// node.append("text")
+// .attr("cx", function(d) { return (d.poverty); })
+// .attr("cy", function(d) { return (d.smokes); })
+// .text(function(d){
+//           return d.abbr;
+// });
+
+  //  Step 5: Create Circles
   // ==============================
-  var circlesGroup = chartGroup.selectAll("circle")
-  .data(usCensusData)
-  .enter()
-  .append("circle")
-  .attr("cx", d => xLinearScale(d.poverty))
-  .attr("cy", d => yLinearScale(d.smokes))
-  .attr("r", "5")
-  .attr("fill", "red")
-  .attr("opacity", ".5");
+  // var circlesGroup = chartGroup.selectAll("circle")
+  // .data(usCensusData)
+  // .enter()
+  // .append("circle")
+  // .attr("cx", d => xLinearScale(d.poverty))
+  // .attr("cy", d => yLinearScale(d.smokes))
+  // .attr("r", "15")
+  // .attr("fill", "pink")
+  // .attr("opacity", ".5")
+  // .text(function(d){
+  //         return d.abbr;});
+  //
+  // circlesGroup.append("text")
+  //               	    .attr("r", function(d){return -20})
+  //               	    .text(function(d){return d.abbr});
 
+  // var labels = chartGroup.selectAll("text")
+  //      .data(usCensusData)
+  //      .enter()
+  //      .append("text")
+  //      // Add your code below this line
+  //      .attr("x", (d) => d[0]+5)
+  //      .attr("y", (d) => h - d[1])
+  //      .text((d) => d.abbr);
+       // Add your code above this line
 
-// Step 7: Create tooltip in the chart
+  // Step 6: Initialize tool tip
+  // ==============================
+  var toolTip = d3.tip()
+    .attr("class", "tooltip")
+    .offset([80, -60])
+    .html(function(d) {
+      return (`${d.abbr}<br>Poverty: ${d.poverty}<br>Smoking: ${d.smokes}`);
+    });
+
+  // Step 7: Create tooltip in the chart
   // ==============================
   chartGroup.call(toolTip);
 
@@ -110,11 +206,10 @@ d3.csv("data.csv", function(error, usCensusData) {
     .attr("x", 0 - (height / 2))
     .attr("dy", "1em")
     .attr("class", "axisText")
-    .text("Smoking Rate");
+    .text("Incidence of Smoking by State");
 
   chartGroup.append("text")
     .attr("transform", `translate(${width / 2}, ${height + margin.top + 30})`)
     .attr("class", "axisText")
-    .text("Poverty %");
-});  
-
+    .text("Poverty Rate");
+});
